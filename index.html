@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحدي الكيميائية البيئية | معرض الكيمياء</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --accent-color: #81c784;
+            --bg-color: #f4f9f4;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(46, 125, 50, 0.15);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            border-top: 6px solid var(--primary-color);
+        }
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        p.subtitle {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+        .question-box {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .options-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        button.option-btn {
+            background: #ffffff;
+            border: 2px solid var(--accent-color);
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+        button.option-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .score-board {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 15px;
+        }
+        .hidden {
+            display: none;
+        }
+        .restart-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="game-container">
+        <h1>🌿 الكيميائية البيئية: أنقذي الكوكب 🧪</h1>
+        <p class="subtitle">اختبري معلوماتك واكتشفي كيف يحل الكيميائي البيئي مشكلات الأرض!</p>
+
+        <div id="quiz-screen">
+            <div id="question-text" class="question-box">جاري تحميل السؤال...</div>
+            <div class="options-grid" id="options-container">
+                <!-- خيارات الإجابة تتعبى تلقائياً عبر الجافاسكريبت -->
+            </div>
+            <div class="score-board">النقاط: <span id="score">0</span> / 4</div>
+        </div>
+
+        <div id="result-screen" class="hidden">
+            <h2>🎉 كففوء يا كيميائية!</h2>
+            <p id="final-message" style="font-size: 1.1rem; margin: 20px 0;"></p>
+            <button class="restart-btn" onclick="restartGame()">العبى مرة أخرى 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "1. مصنع ألقى مخلفات حمضية رفعت حموضة نهر قريب (pH منخفض)، أي مادة تستخدم الكيميائية البيئية لمعادلتها؟",
+                options: ["قاعدة آمنة ومعادلة للتوازن", "مزيد من الأحماض المركزة", "مادة بلاستيكية صلبة"],
+                correct: 0
+            },
+            {
+                question: "2. ما هي المهمة الأساسية لـ (الكيميائي البيئي) في حماية الطبيعة؟",
+                options: ["صناعة الألعاب النارية الصاخبة", "دراسة تتبع الملوثات ومعالجة المياه والتربة", "تصميم الأزياء العصرية"],
+                correct: 1
+            },
+            {
+                question: "3. كيف تدرس الكيميائية البيئية تفاعل التربة؟",
+                options: ["بإهمال مكوناتها وتجاهلها", "بتحليل العناصر الكيميائية ونسبة الخصوبة والملوحة", "برش ألوان صناعية عشوائية"],
+                correct: 1
+            },
+            {
+                question: "4. ما هو العنصر الأبرز الذي يدرسه الكيميائي البيئي لتقييم صحة الغلاف الجوي والهواء؟",
+                options: ["نسبة الغازات والملوثات والانبعاثات", "عدد النجوم في السماء", "نوع الصخور البركانية القديمة"],
+                correct: 0
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        const questionText = document.getElementById("question-text");
+        const optionsContainer = document.getElementById("options-container");
+        const scoreSpan = document.getElementById("score");
+        const quizScreen = document.getElementById("quiz-screen");
+        const resultScreen = document.getElementById("result-screen");
+        const finalMessage = document.getElementById("final-message");
+
+        function loadQuestion() {
+            const currentQ = quizData[currentQuestion];
+            questionText.innerText = currentQ.question;
+            optionsContainer.innerHTML = "";
+
+            currentQ.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.classList.add("option-btn");
+                btn.innerText = option;
+                btn.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectAnswer(selectedIndex) {
+            const currentQ = quizData[currentQIndex = currentQuestion];
+            if (selectedIndex === currentQ.correct) {
+                score += 25;
+                scoreSpan.innerText = score;
+            }
+
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizScreen.classList.add("hidden");
+            resultScreen.classList.remove("hidden");
+            
+            if (score === 100) {
+                finalMessage.innerText = "أنتِ كيميائية بيئية ماهرة بحق! أنقذتِ الكوكب بامتياز 🌟🌿";
+            } else if (score >= 50) {
+                finalMessage.innerText = "نتيجة ممتازة! لديكِ حس علمي بيئي رائع 🧪💚";
+            } else {
+                finalMessage.innerText = "محاولة رائعة! الكيميائي البيئي يتعلم دائماً من التجربة 💪";
+            }
+        }
+
+        function restartGame() {
+            currentQuestion = 0;
+            score = 0;
+            scoreSpan.innerText = score;
+            resultScreen.classList.add("hidden");
+            quizScreen.classList.remove("hidden");
+            loadQuestion();
+        }
+
+        loadQuestion();
+    </script>
+</body>
+</html>
